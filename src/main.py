@@ -16,4 +16,5 @@ async def on_ready():
     print("Ready to go!")
 
 if __name__ == "__main__":
+    bot.add_cog(cogs.Game(bot,resource_manager))
     bot.run(config["token"])
