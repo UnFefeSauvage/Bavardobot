@@ -1,2 +1,5 @@
 *.code-workspace
 venv
+__pycache__
+.vscode
+config.json
