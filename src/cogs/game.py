@@ -9,6 +9,10 @@ class Game(commands.Cog):
     def __init__(self, bot, resource_manager):
         self.bot = bot
         self.resource_manager = resource_manager
+
+        self.ready_guilds = []
+        self.games = {}
+        os.listdir()
         #TODO Charger les fichiers nécéssaires
         """
             - Banque de mots
@@ -16,10 +20,28 @@ class Game(commands.Cog):
             - Configuration par serveur
         """
     
+    #TODO Gérer les timers de partie
+    #* https://docs.python.org/3/library/asyncio-task.html#task-object
+    
+    #TODO cog_check: 
+    """
+        Vérifier:
+            - guild in ready_guilds
+    """
+    def cog_check(self, ctx):
+        if not (ctx.guild.id in self.ready_guilds):
+            return False
+
+        return True
+
     @commands.Cog.listener()
-    async def on_guild_join(self, guild):
+    async def on_guild_join(self, guild : discord.Guild ):
         #TODO créer le répertoire et les fichiers nécéssaires pour le serveur
-        pass
+        initialised = await self.create_guild_files(guild.id)
+        if initialised:
+            self.ready_guilds.append(guild.id)
+        else:
+            #TODO Annonce on a channel that the game initialisation failed (You should do it manually)
 
     @commands.Cog.listener()
     async def on_message(self, msg):
