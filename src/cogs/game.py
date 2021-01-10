@@ -55,7 +55,12 @@ class Game(commands.Cog):
         if initialised:
             self.ready_guilds.append(guild.id)
         else:
-            #TODO Annonce on a channel that the game initialisation failed (You should do it manually)
+            logging.info(f'Initialisation failed for guild "{guild.name}" (id: {guild.id})')
+            dm = guild.owner.dm_channel()
+            if dm is None:
+                dm = guild.owner.create_dm()
+                dm.send(f"Bonjour! Je viens d'arriver sur {guild.name} et j'ai malheureusement échoué à initialiser le jeu pour le serveur :<\n"
+                      + f"Vous pouvez réessayer d'initialiser le jeu en utilisant la commande `=init_game` n'importe où sur le serveur.")
 
     @commands.Cog.listener()
     async def on_message(self, msg):
