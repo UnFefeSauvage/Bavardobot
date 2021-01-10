@@ -1,5 +1,10 @@
+#ignore machine/project specific files
 *.code-workspace
-venv
-__pycache__
-.vscode
 config.json
+venv
+__pycache__/
+.vscode/
+
+#ignore data folders except the template
+resources/guilds/*
+!resources/guilds/template/
