@@ -1,10 +1,9 @@
 import discord
 from discord.ext import commands
 
-#TODO Un jeu de placement de mots dans des conversations 
+import os
 
-def create_guild_files(guild_id):
-    pass
+#TODO Un jeu de placement de mots dans des conversations 
 
 class Game(commands.Cog):
     def __init__(self, bot, resource_manager):
@@ -54,3 +53,15 @@ class Game(commands.Cog):
     async def classement(self, ctx):
         #TODO affiche le classement des joueurs
         pass
+
+    async def create_guild_files(self, guild_id):
+        path = os.path.normpath( f"{self.resource_manager.path}/guilds/{guild_id}" )
+        os.mkdir(path)
+
+        data = self.resource_manager.read("guilds/template/config.json")
+        self.resource_manager.write(f"guilds/{guild_id}/config.json", data)
+
+        data = self.resource_manager.read("guilds/template/games.json")
+        self.resource_manager.write(f"guilds/{guild_id}/games.json", data)
+
+        return True
