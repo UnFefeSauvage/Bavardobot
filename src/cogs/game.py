@@ -2,11 +2,13 @@ import discord
 from discord.ext import commands
 
 import os
+import logging
 
 #TODO Un jeu de placement de mots dans des conversations 
 
 class Game(commands.Cog):
     def __init__(self, bot, resource_manager):
+        logging.info("Initializing Game cog...")
         self.bot = bot
         self.resource_manager = resource_manager
 
@@ -31,6 +33,7 @@ class Game(commands.Cog):
             - Jeux en cours
             - Configuration par serveur
         """
+        logging.debug("Finished Game cog initialisation!")
     
     #TODO Gérer les timers de partie
     #* https://docs.python.org/3/library/asyncio-task.html#task-object
@@ -47,6 +50,7 @@ class Game(commands.Cog):
     @commands.Cog.listener()
     async def on_guild_join(self, guild : discord.Guild ):
         #TODO créer le répertoire et les fichiers nécéssaires pour le serveur
+        logging.info(f'Initializing data for guild "{guild.name}" (id: {guild.id})')
         initialised = await self.create_guild_files(guild.id)
         if initialised:
             self.ready_guilds.append(guild.id)
@@ -73,6 +77,7 @@ class Game(commands.Cog):
     
     @commands.command()
     async def jouer(self, ctx):
+        logging.debug(f'Starting a game for "{ctx.author}" (id: {ctx.author.id}) on "{ctx.guild}" (id: {ctx.guild.id})')
         #TODO donne un mot à placer en MP (cooldown) et créé le jeu en cours
         pass
 
@@ -87,6 +92,7 @@ class Game(commands.Cog):
         pass
 
     async def create_guild_files(self, guild_id):
+        logging.info(f"Creating new game files for guild {guild_id}...")
         path = os.path.normpath( f"{self.resource_manager.path}/guilds/{guild_id}" )
         os.mkdir(path)
 

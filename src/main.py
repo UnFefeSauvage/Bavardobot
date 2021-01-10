@@ -2,9 +2,14 @@ import discord
 from discord.ext import commands
 
 import json
+import logging
 
 import resources
 import cogs
+
+logging.basicConfig(level=logging.INFO)
+#* Pour plus de paramètres:
+#* https://discordpy.readthedocs.io/en/latest/logging.html?highlight=logger#setting-up-logging
 
 resource_manager = resources.ResourcesManager("resources")
 config = json.loads(resource_manager.read("config.json"))
