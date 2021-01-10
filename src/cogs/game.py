@@ -11,7 +11,6 @@ class Game(commands.Cog):
         logging.info("Initializing Game cog...")
         self.bot = bot
         self.resource_manager = resource_manager
-
         self.ready_guilds = []
         self.games = {}
         os.listdir()
@@ -29,7 +28,6 @@ class Game(commands.Cog):
         
         #TODO Charger les fichiers nécéssaires
         """
-            - Banque de mots
             - Jeux en cours
             - Configuration par serveur
         """
