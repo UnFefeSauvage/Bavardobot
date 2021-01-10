@@ -13,6 +13,18 @@ class Game(commands.Cog):
         self.ready_guilds = []
         self.games = {}
         os.listdir()
+
+        logging.debug("Loading words...")
+        # Load the words
+        with open("resources/words", 'r') as file:
+            line = file.readline()
+            while line:
+                    words.append(line.strip('\n'))
+                    line = file.readline()
+        
+        logging.debug("Loading guild configs...")
+        guilds_to_load = []
+        
         #TODO Charger les fichiers nécéssaires
         """
             - Banque de mots
