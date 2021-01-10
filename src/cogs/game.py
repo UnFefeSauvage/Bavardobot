@@ -35,16 +35,14 @@ class Game(commands.Cog):
     #TODO Gérer les timers de partie
     #* https://docs.python.org/3/library/asyncio-task.html#task-object
     
-    #TODO cog_check: 
-    """
-        Vérifier:
-            - guild in ready_guilds
-    """
+    # Invoquée à chaque commande: s'il renvoie faux, la commande n'est pas lancée
     def cog_check(self, ctx):
         if not (ctx.guild.id in self.ready_guilds):
             return False
 
         return True
+    
+    #TODO gestion d'erreur
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild : discord.Guild ):
