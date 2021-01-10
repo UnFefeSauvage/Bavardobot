@@ -1,4 +1,6 @@
 {
     "activated": true,
-    "whitelist": false
+    "whitelist": false,
+    "write_timer": 86400,
+    "find_timer": 36000
 }
