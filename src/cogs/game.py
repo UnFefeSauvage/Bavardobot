@@ -121,6 +121,26 @@ class GameCog(commands.Cog):
         #TODO affiche le classement des joueurs
         pass
 
+    async def wait_until_game_expires(self, guild_id, game):
+        duration = self.configs[str(guild_id)]["write_timer"]
+        start = game["time"]
+        now = int(time.time())
+        wait_time = duration - (now - start)
+        if wait_time > 0:
+            try:
+                await asyncio.sleep(wait_time)
+            except asyncio.CancelledError:
+                logger.debug(f"Game of user {game['user_id']} in guild {guild_id} has been cancelled" % ())
+                return
+        
+        #else
+        logger.debug(f"Game of user {game['user_id']} in guild {guild_id} has expired, deleting...")
+        #TODO Inform user that his game has expired (and he can create a new one)
+        del self.games[str(guild_id)][game["user_id"]]
+        self.resource_manager.write("guilds/games.json", json.dumps(self.games[str(guild_id)], indent=4) )
+
+        
+
     async def create_guild_files(self, guild_id):
         logger.info(f"Creating new game files for guild {guild_id}...")
         path = os.path.normpath( f"{self.resource_manager.path}/guilds/{guild_id}" )
