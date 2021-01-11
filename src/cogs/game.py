@@ -184,6 +184,7 @@ class GameCog(commands.Cog):
             self.resource_manager.write(f"guilds/{guild_id}/games.json", data)
         except:
             logger.warning(f"Initialisation failed for guild {guild_id}")
+            return False
 
         return True
     
