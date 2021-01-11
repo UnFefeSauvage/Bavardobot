@@ -133,3 +133,14 @@ class GameCog(commands.Cog):
         self.resource_manager.write(f"guilds/{guild_id}/games.json", data)
 
         return True
+    
+    def new_game(self, user_id, start):
+        now = int(time.time())
+        return {
+            "time": now,
+            "word": self.words[random.randint(0, len(self.words))],
+            "placed": False,
+            "msg_link": False,
+            "msg_content": False,
+            "msg_id": False
+        }
