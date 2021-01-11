@@ -25,6 +25,7 @@ class GameCog(commands.Cog):
         self.resource_manager = resource_manager
         self.ready_guilds = []
         self.games = {}
+        self.tasks = {}
         self.configs = {}
         os.listdir()
 
@@ -53,8 +54,6 @@ class GameCog(commands.Cog):
                 logger.debug(f"{user_id}: {game}")
                 self.games[guild_id][user_id] = game
             
-            #TODO initialiser les tasks pour chaque partie
-            
             self.ready_guilds.append(guild_id)
             logger.debug(f"Initialised guild {guild_id}")
 
@@ -62,6 +61,21 @@ class GameCog(commands.Cog):
 
         logger.info("Finished Game cog initialisation!")
     
+    @commands.Cog.listener()
+    async def on_ready(self):
+        #* Création des coroutines d'attente d'expiration des parties
+        self.tasks = {}
+        for guild_id, games in self.games.items():
+            self.tasks[guild_id] = {}
+            for user_id, game in games.items():
+                logger.debug(f"Creating task for game {user_id} in guild {guild_id}")
+                if not game["placed"]:
+                    self.tasks[guild_id][user_id] = asyncio.create_task(self.wait_until_game_expires(guild_id, game))
+                else:
+                    #TODO Créer une tâche: attendre la validation de la partie
+                    pass
+
+
     #TODO Gérer les timers de partie
     #* https://docs.python.org/3/library/asyncio-task.html#task-object
     
