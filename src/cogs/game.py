@@ -88,6 +88,10 @@ class GameCog(commands.Cog):
     
     #TODO gestion d'erreur
 
+    #*-*-*-*-*-*-*-*-*#
+    #*-*-LISTENERS-*-*#
+    #*-*-*-*-*-*-*-*-*#
+
     @commands.Cog.listener()
     async def on_guild_join(self, guild : discord.Guild ):
         logger.info(f'Initializing data for guild "{guild.name}" (id: {guild.id})')
@@ -119,22 +123,32 @@ class GameCog(commands.Cog):
         #* https://discordpy.readthedocs.io/en/latest/api.html?highlight=on_message#rawmessagedeleteevent
         pass
     
+    #*-*-*-*-*-*-*-*-*#
+    #*-*-COMMANDS--*-*#
+    #*-*-*-*-*-*-*-*-*#
     
     @commands.command()
     async def jouer(self, ctx):
+        """Démarre une partie et te donne un mot à placer en MP"""
         logger.debug(f'Starting a game for "{ctx.author}" (id: {ctx.author.id}) on "{ctx.guild}" (id: {ctx.guild.id})')
         #TODO donne un mot à placer en MP (cooldown) et créé le jeu en cours
         pass
 
     @commands.command()
     async def unmask(self, ctx, *, mot):
+        """unmask [lien] [mot]  Te permet de démasquer un mot dans le message de quelqu'un"""
         #TODO démasque un joueur sur son mot (cooldown en cas de faux) et résoud le jeu
         pass
 
     @commands.command()
     async def classement(self, ctx):
+        """Affiche le classement des joueurs du serveur"""
         #TODO affiche le classement des joueurs
         pass
+
+    #*-*-*-*-*-*-*#
+    #*-*-TASKS-*-*#
+    #*-*-*-*-*-*-*#
 
     async def wait_until_game_expires(self, guild_id, game):
         duration = self.configs[str(guild_id)]["write_timer"]
@@ -154,7 +168,9 @@ class GameCog(commands.Cog):
         del self.games[str(guild_id)][game["user_id"]]
         self.resource_manager.write("guilds/games.json", json.dumps(self.games[str(guild_id)], indent=4) )
 
-        
+    #*-*-*-*-*-*-*-*-*#
+    #*-*-UTILITIES-*-*#
+    #*-*-*-*-*-*-*-*-*#
 
     async def create_guild_files(self, guild_id):
         logger.info(f"Creating new game files for guild {guild_id}...")
