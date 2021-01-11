@@ -171,6 +171,13 @@ class GameCog(commands.Cog):
     #*-*-UTILITIES-*-*#
     #*-*-*-*-*-*-*-*-*#
 
+    def has_running_game(self, guild_id, user_id):
+        if str(user_id) in self.games[guild_id]:
+            return True
+        else:
+            return False
+
+
     async def create_guild_files(self, guild_id):
         logger.info(f"Creating new game files for guild {guild_id}...")
         path = os.path.normpath( f"{self.resource_manager.path}/guilds/{guild_id}" )
