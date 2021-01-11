@@ -131,6 +131,12 @@ class GameCog(commands.Cog):
         """Démarre une partie et te donne un mot à placer en MP"""
         if self.has_running_game(ctx.author):
             #TODO Renvoyer les détails de sa partie à l'auteur
+            dm = ctx.author.dm_channel
+            if dm is None:
+                dm = await ctx.author.create_dm()
+            game_embed = self.get_game_info_embed(ctx.author)
+            await dm.send(embed=game_embed)
+            await ctx.send("Tu as déjà une partie en cours, je te renvoie les détails!")
             return
 
         #else
