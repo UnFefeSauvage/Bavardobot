@@ -2,6 +2,9 @@ import discord
 from discord.ext import commands
 
 import os
+import random
+import time
+import json
 import logging
 
 logger = logging.getLogger(__name__)
