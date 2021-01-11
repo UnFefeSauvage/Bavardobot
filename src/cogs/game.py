@@ -178,6 +178,15 @@ class GameCog(commands.Cog):
             return False
 
 
+    def get_game_info_embed(self, member):
+        game = self.games[str(member.guild.id)][str(member.id)]
+        timer = self.configs[str(member.guild.id)]["write_timer"] - (int(time.time()) - game["time"])
+        hours = timer // 3600 
+        remaining_time = "%sh %smin %ss" % (timer//3600, (timer%3600)//60, (timer%60))
+        embed = discord.Embed(title="Détails de ta partie:", color=member.color).add_field(name="Mot à placer", value=game["word"]).add_field(name="Temps restant", value=remaining_time)
+        return embed
+        
+
     async def create_guild_files(self, guild_id):
         logger.info(f"Creating new game files for guild {guild_id}...")
         path = os.path.normpath( f"{self.resource_manager.path}/guilds/{guild_id}" )
