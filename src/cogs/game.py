@@ -99,7 +99,6 @@ class GameCog(commands.Cog):
         if initialised:
             self.ready_guilds.append(guild.id)
         else:
-            logger.info(f'Initialisation failed for guild "{guild.name}" (id: {guild.id})')
             dm = guild.owner.dm_channel()
             if dm is None:
                 dm = guild.owner.create_dm()
@@ -175,13 +174,16 @@ class GameCog(commands.Cog):
     async def create_guild_files(self, guild_id):
         logger.info(f"Creating new game files for guild {guild_id}...")
         path = os.path.normpath( f"{self.resource_manager.path}/guilds/{guild_id}" )
-        os.mkdir(path)
+        try:
+            os.mkdir(path)
 
-        data = self.resource_manager.read("guilds/template/config.json")
-        self.resource_manager.write(f"guilds/{guild_id}/config.json", data)
+            data = self.resource_manager.read("guilds/template/guild_config.json")
+            self.resource_manager.write(f"guilds/{guild_id}/config.json", data)
 
-        data = self.resource_manager.read("guilds/template/games.json")
-        self.resource_manager.write(f"guilds/{guild_id}/games.json", data)
+            data = self.resource_manager.read("guilds/template/games.json")
+            self.resource_manager.write(f"guilds/{guild_id}/games.json", data)
+        except:
+            logger.warning(f"Initialisation failed for guild {guild_id}")
 
         return True
     
