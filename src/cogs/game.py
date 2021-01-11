@@ -54,7 +54,7 @@ class GameCog(commands.Cog):
                 logger.debug(f"{user_id}: {game}")
                 self.games[guild_id][user_id] = game
             
-            self.ready_guilds.append(guild_id)
+            self.ready_guilds.append(int(guild_id))
             logger.debug(f"Initialised guild {guild_id}")
 
             
@@ -164,19 +164,19 @@ class GameCog(commands.Cog):
         #else
         logger.debug(f"Game of user {game['user_id']} in guild {guild_id} has expired, deleting...")
         #TODO Inform user that his game has expired (and he can create a new one)
-        del self.games[str(guild_id)][game["user_id"]]
-        self.resource_manager.write("guilds/games.json", json.dumps(self.games[str(guild_id)], indent=4) )
+        del self.games[str(guild_id)][str(game["user_id"])]
+        self.resource_manager.write(f"guilds/{guild_id}/games.json", json.dumps(self.games[str(guild_id)], indent=4) )
 
     #*-*-*-*-*-*-*-*-*#
     #*-*-UTILITIES-*-*#
     #*-*-*-*-*-*-*-*-*#
 
-    def has_running_game(self, guild_id, user_id):
-        if str(user_id) in self.games[guild_id]:
+    def has_running_game(self, member):
+        if str(member.id) in self.games[str(member.guild.id)]:
             return True
         else:
             return False
-
+    
 
     def get_game_info_embed(self, member):
         game = self.games[str(member.guild.id)][str(member.id)]
@@ -204,7 +204,7 @@ class GameCog(commands.Cog):
 
         return True
     
-    def new_game(self, user_id, start):
+    def new_game(self, user_id):
         now = int(time.time())
         return {
             "user_id": user_id,
