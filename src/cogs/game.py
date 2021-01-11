@@ -4,11 +4,19 @@ from discord.ext import commands
 import os
 import logging
 
+logger = logging.getLogger(__name__)
+handler = logging.StreamHandler()
+handler.setLevel(logging.DEBUG)
+logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(name)-12.12s] [%(levelname)-5.5s]  %(message)s")
+handler.setFormatter(logFormatter)
+logger.addHandler(handler)
+
+
 #TODO Un jeu de placement de mots dans des conversations 
 
 class Game(commands.Cog):
     def __init__(self, bot, resource_manager):
-        logging.info("Initializing Game cog...")
+        logger.info("Initializing Game cog...")
         self.bot = bot
         self.resource_manager = resource_manager
         self.ready_guilds = []
@@ -16,7 +24,7 @@ class Game(commands.Cog):
         self.configs = {}
         os.listdir()
 
-        logging.debug("Loading words...")
+        logger.debug("Loading words...")
         # Load the words
         self.words = []
         with open("resources/words", 'r') as file:

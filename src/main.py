@@ -7,7 +7,15 @@ import logging
 import resources
 import cogs
 
-logging.basicConfig(level=logging.INFO)
+root = logging.getLogger()
+root.setLevel(logging.DEBUG)
+
+logger = logging.getLogger(__name__)
+handler = logging.StreamHandler()
+handler.setLevel(logging.DEBUG)
+logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(name)-12.12s] [%(levelname)-5.5s]  %(message)s")
+handler.setFormatter(logFormatter)
+logger.addHandler(handler)
 #* Pour plus de paramètres:
 #* https://discordpy.readthedocs.io/en/latest/logging.html?highlight=logger#setting-up-logging
 
