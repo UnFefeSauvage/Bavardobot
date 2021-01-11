@@ -30,13 +30,15 @@ class ResourcesManager:
             raise ValueError(f"Cannot write to {path} for it is a directory!")
         
         path = self.path + "/" + os.path.normpath(path)
-        print(path)
 
         if ".." in path or path[0] == "/":
             raise ValueError("Only relative paths to childs are allowed!")
+        
+        if os.path.isdir(path):
+            raise ValueError(f"{path} is a directory")
 
         if not os.path.isfile(path):
-            raise FileNotFoundError("The file to read does not exist!")
+            raise FileNotFoundError(f"{path} does not exist!")
 
         data = None
 
