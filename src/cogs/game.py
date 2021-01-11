@@ -13,25 +13,42 @@ class Game(commands.Cog):
         self.resource_manager = resource_manager
         self.ready_guilds = []
         self.games = {}
+        self.configs = {}
         os.listdir()
 
         logging.debug("Loading words...")
         # Load the words
+        self.words = []
         with open("resources/words", 'r') as file:
             line = file.readline()
             while line:
-                    words.append(line.strip('\n'))
+                    self.words.append(line.strip('\n'))
                     line = file.readline()
         
-        logging.debug("Loading guild configs...")
-        guilds_to_load = []
-        
-        #TODO Charger les fichiers nécéssaires
-        """
-            - Jeux en cours
-            - Configuration par serveur
-        """
-        logging.debug("Finished Game cog initialisation!")
+        logger.debug("Loading guild configs...")
+        guilds_to_load = os.listdir("resources/guilds")
+        guilds_to_load.remove("template")
+
+        for guild_id in guilds_to_load:
+            logger.debug(f"Loading guild {guild_id}")
+            self.configs[guild_id] = json.loads(resource_manager.read(f"guilds/{guild_id}/guild_config.json"))
+            games = json.loads(resource_manager.read(f"guilds/{guild_id}/games.json"))
+
+            self.games[guild_id] = {}
+
+            logger.debug(f"loading games for guild {guild_id}")
+            for user_id, game in games.items():
+                logger.debug(f"{user_id}: {game}")
+                self.games[guild_id][user_id] = game
+            
+            #TODO initialiser les tasks pour chaque partie
+            
+            self.ready_guilds.append(guild_id)
+            logger.debug(f"Initialised guild {guild_id}")
+
+            
+
+        logger.info("Finished Game cog initialisation!")
     
     #TODO Gérer les timers de partie
     #* https://docs.python.org/3/library/asyncio-task.html#task-object
