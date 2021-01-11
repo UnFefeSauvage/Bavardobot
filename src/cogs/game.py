@@ -157,6 +157,7 @@ class GameCog(commands.Cog):
     def new_game(self, user_id, start):
         now = int(time.time())
         return {
+            "user_id": user_id,
             "time": now,
             "word": self.words[random.randint(0, len(self.words))],
             "placed": False,
