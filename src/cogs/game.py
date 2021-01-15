@@ -313,6 +313,7 @@ class GameCog(commands.Cog):
             "time": now,
             "word": self.words[random.randint(0, len(self.words))],
             "placed": False,
+            "time_placed": False,
             "msg_link": False,
             "msg_content": False,
             "msg_id": False
