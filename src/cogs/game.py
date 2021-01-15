@@ -73,8 +73,7 @@ class GameCog(commands.Cog):
                 if not game["placed"]:
                     self.tasks[guild_id][user_id] = asyncio.create_task(self.wait_until_game_expires(guild_id, game))
                 else:
-                    #TODO Créer une tâche: attendre la validation de la partie
-                    pass
+                    self.tasks[guild_id][user_id] = asyncio.create_task(self.wait_for_victory(guild_id, game))
 
 
     #TODO Gérer les timers de partie
