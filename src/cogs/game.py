@@ -267,6 +267,23 @@ class GameCog(commands.Cog):
         #TODO Inform user that his game has expired (and he can create a new one)
         del self.games[str(guild_id)][str(game["user_id"])]
         self.resource_manager.write(f"guilds/{guild_id}/games.json", json.dumps(self.games[str(guild_id)], indent=4) )
+    
+    async def wait_for_victory(self, guild_id, game):
+        duration = self.configs[str(guild_id)]["find_timer"]
+        start = game["time_placed"]
+        now = int(time.time())
+        wait_time = duration - (now - start)
+        if wait_time > 0:
+            try:
+                await asyncio.sleep(wait_time)
+            except asyncio.CancelledError:
+                logger.debug(f"Game (phase 2) of user {game['user_id']} in guild {guild_id} has been cancelled")
+                return
+        
+        logger.debug(f"Find timer of user {game['user_id']} in guild {guild_id} timed out! Processing win...")
+        #TODO Inform the player
+        #TODO Add points to the player
+        #TODO (Maybe announce it?)
 
     #*-*-*-*-*-*-*-*-*#
     #*-*-UTILITIES-*-*#
