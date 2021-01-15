@@ -111,7 +111,6 @@ class GameCog(commands.Cog):
         if str(msg.author.id) in self.games[str(msg.guild.id)]:
             game = self.games[str(msg.guild.id)][str(msg.author.id)]
             # ... et si son mot n'a pas encore été placé:
-            #FIXME Autoriser n'importe quelle casse
             if (not game["placed"]) and (game["word"].lower() in msg.content.lower()):
                 #TODO Valider le placement et passer le jeu en phase 2
                 pass
@@ -127,7 +126,6 @@ class GameCog(commands.Cog):
                 has_data = False
                 break
         
-        #TODO Fetch le message si on a pas les données
         if has_data:
             author_id = payload.data["author"]["id"]
             content = payload.data["content"]
