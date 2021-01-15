@@ -186,8 +186,14 @@ class GameCog(commands.Cog):
             game = self.games[guild_id][author_id]
             asyncio.create_task(self.wait_until_game_expires(guild_id, game))
 
-            #TODO Prévenir le joueur
-            #TODO Arrêter la tâche d'attente de victoire et repasser en phase de placement
+            #Avertissement du joueur
+            guild = discord.utils.get(self.bot.guilds, id=int(guild_id))
+            author = discord.utils.get(guild.members, id=int(author_id))
+            dm = author.dm_channel
+            if dm is None:
+                dm = await author.create_dm()
+            game_embed = self.get_game_info_embed(author)
+            await dm.send(f'Tu as supprimé le mot de ton message gagnant dans "{guild.name}"! Ton placement est invalidé, voilà les détails de ta partie:', embed=game_embed)
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
