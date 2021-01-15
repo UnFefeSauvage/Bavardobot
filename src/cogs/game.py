@@ -183,7 +183,7 @@ class GameCog(commands.Cog):
 
             #Relancer la phase de placement de la partie
             game = self.games[guild_id][author_id]
-            asyncio.create_task(self.wait_until_game_expires(guild_id, game))
+            self.tasks[guild_id][author_id] = asyncio.create_task(self.wait_until_game_expires(guild_id, game))
 
             #Avertissement du joueur
             guild = discord.utils.get(self.bot.guilds, id=int(guild_id))
