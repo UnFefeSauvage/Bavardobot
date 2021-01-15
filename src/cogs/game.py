@@ -295,7 +295,16 @@ class GameCog(commands.Cog):
         
         #else
         logger.debug(f"Game of user {game['user_id']} in guild {guild_id} has expired, deleting...")
-        #TODO Inform user that his game has expired (and he can create a new one)
+
+        #Informer le joueur
+        guild = discord.utils.get(self.bot.guilds, id=guild_id)
+        player = discord.utils.get(guild.members, id=game['user_id'])
+        dm = player.dm_channel()
+            if dm is None:
+                dm = player.create_dm()
+        dm.send(f'Ta partie sur le serveur {guild.name} a expiré! Tu peux rejouer en tapant `=jouer` sur le serveur.')
+
+        #Supprimer la partie
         del self.games[str(guild_id)][str(game["user_id"])]
         self.resource_manager.write(f"guilds/{guild_id}/games.json", json.dumps(self.games[str(guild_id)], indent=4) )
     
