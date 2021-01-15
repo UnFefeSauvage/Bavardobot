@@ -120,7 +120,65 @@ class GameCog(commands.Cog):
     async def on_raw_message_edit(self, payload):
         #TODO vérifier que l'auteur ne triche pas (invalider si triche)
         #* https://discordpy.readthedocs.io/en/latest/api.html?highlight=on_message#rawmessageupdateevent
-        pass
+        required_data =["author", "content", "guild_id","id"]
+        has_data = True
+        for key in required_data:
+            if not (key in payload.data.keys()):
+                has_data = False
+                break
+        
+        #TODO Fetch le message si on a pas les données
+        if has_data:
+            author_id = payload.data["author"]["id"]
+            content = payload.data["content"]
+            guild_id = payload.data["guild_id"]
+            message_id = payload.data["id"]
+        else:
+            if "guild_id" in payload.data.keys():
+                guild_id = payload.data["guild_id"]
+            else:
+                logger.info("on_raw_message_edit did not get the guild_id of the message: assuming it is not in a guild")
+                return
+            
+            guild = self.bot.get_guild(int(guild_id))
+            channel = guild.get_channel(payload.channel_id)
+            msg = await channel.fetch_message(payload.message_id)
+            #S'il s'agit d'un message système, l'ignorer
+            if msg.type != discord.MessageType.default:
+                logger.debug("on_raw_message_edit: update is a system update, ignoring")
+                return
+            else:
+                author_id = str(msg.author.id)
+                content = msg.content
+                guild_id = str(msg.guild.id)
+                message_id = str(msg.id)
+
+        logger.debug(f"author_id: {author_id}, guild_id: {guild_id}, msg_id: {message_id}, content: {content}")
+
+        #Si le serveur n'est pas initialisé, quitter
+        if not (int(guild_id) in self.ready_guilds):
+            return
+        #Sinon...
+        #Si l'auteur n'a pas de partie en cours, quitter
+        if author_id in self.games[guild_id]:
+            return
+        #Sinon...
+        game = self.games[guild_id][author_id]
+
+        #Si le joueur n'a pas encore placé son mot, quitter
+        if not game["placed"]:
+            return
+
+        #if the message is not the winning message, quit
+        if not (game["msg_id"] == message_id):
+            return
+        
+        #Si le mot a disparu du message, l'invalider
+        if not (game["word"] in content):
+            self.games[guild_id][author_id]["placed"] = False
+            self.resource_manager.write(f"guilds/{guild_id}/games.json", json.dumps(self.games[guild_id], indent=4))
+            #TODO Prévenir le joueur
+            #TODO Arrêter la tâche d'attente de victoire et repasser en phase de placement
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
