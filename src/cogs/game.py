@@ -28,6 +28,7 @@ class GameCog(commands.Cog):
         self.games = {}
         self.tasks = {}
         self.configs = {}
+        self._is_modified = {}
         os.listdir()
 
         logger.debug("Loading words...")
@@ -49,6 +50,7 @@ class GameCog(commands.Cog):
             games = json.loads(resource_manager.read(f"guilds/{guild_id}/games.json"))
 
             self.games[guild_id] = {}
+            self._is_modified[guild_id] = {"games": False, "config": False}
 
             logger.debug(f"loading games for guild {guild_id}")
             for user_id, game in games.items():
@@ -97,6 +99,7 @@ class GameCog(commands.Cog):
         logger.info(f'Initializing data for guild "{guild.name}" (id: {guild.id})')
         initialised = await self.create_guild_files(guild.id)
         if initialised:
+            self._is_modified[str(guild.id)] = {"games": False, "config": False}
             self.ready_guilds.append(guild.id)
         else:
             dm = guild.owner.dm_channel()
