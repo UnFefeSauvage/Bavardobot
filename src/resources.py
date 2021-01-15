@@ -27,7 +27,7 @@ class ResourcesManager:
         
     def read(self, path):
         if os.path.isdir(path):
-            raise ValueError(f"Cannot write to {path} for it is a directory!")
+            raise IsADirectoryError(f"Cannot write to {path} for it is a directory!")
         
         path = self.path + "/" + os.path.normpath(path)
 
