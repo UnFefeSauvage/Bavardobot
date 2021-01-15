@@ -177,6 +177,15 @@ class GameCog(commands.Cog):
         if not (game["word"] in content):
             self.games[guild_id][author_id]["placed"] = False
             self.resource_manager.write(f"guilds/{guild_id}/games.json", json.dumps(self.games[guild_id], indent=4))
+
+            #Arrêt du timer de partie
+            logger.debug(f"Stopping game of {author_id} in {guild_id} for hiding his word.")
+            self.tasks[guild_id][author_id].cancel()
+
+            #Relancer la phase de placement de la partie
+            game = self.games[guild_id][author_id]
+            asyncio.create_task(self.wait_until_game_expires(guild_id, game))
+
             #TODO Prévenir le joueur
             #TODO Arrêter la tâche d'attente de victoire et repasser en phase de placement
 
