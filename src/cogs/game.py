@@ -107,8 +107,14 @@ class GameCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, msg):
-        #TODO vérifier si l'auteur joue et a placé son mot
-        pass
+        #Si l'auteur a une partie en cours sur le serveur
+        if str(msg.author.id) in self.games[str(msg.guild.id)]:
+            game = self.games[str(msg.guild.id)][str(msg.author.id)]
+            # ... et si son mot n'a pas encore été placé:
+            #FIXME Autoriser n'importe quelle casse
+            if (not game["placed"]) and (game["word"] in msg.content):
+                #TODO Valider le placement et passer le jeu en phase 2
+                pass
 
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload):
