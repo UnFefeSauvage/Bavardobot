@@ -110,6 +110,9 @@ class GameCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, msg):
+        #Si l'auteur est un bot, ignorer
+        if msg.author.bot:
+            return
         #Si l'auteur a une partie en cours sur le serveur
         if str(msg.author.id) in self.games[str(msg.guild.id)]:
             game = self.games[str(msg.guild.id)][str(msg.author.id)]
