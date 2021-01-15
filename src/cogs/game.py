@@ -259,7 +259,7 @@ class GameCog(commands.Cog):
             try:
                 await asyncio.sleep(wait_time)
             except asyncio.CancelledError:
-                logger.debug(f"Game of user {game['user_id']} in guild {guild_id} has been cancelled" % ())
+                logger.debug(f"Game (phase 1) of user {game['user_id']} in guild {guild_id} has been cancelled")
                 return
         
         #else
