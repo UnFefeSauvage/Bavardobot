@@ -118,8 +118,17 @@ class GameCog(commands.Cog):
             game = self.games[str(msg.guild.id)][str(msg.author.id)]
             # ... et si son mot n'a pas encore été placé:
             if (not game["placed"]) and (game["word"].lower() in msg.content.lower()):
-                #TODO Valider le placement et passer le jeu en phase 2
-                pass
+                #Valider le placement
+                game["placed"] = True
+                game["msg_link"] = msg.jump_url
+                game["msg_content"] = msg.content
+                game["msg_id"] = msg.id
+                game["time_placed"] = int(time.time())
+                self.games[str(msg.guild.id)][str(msg.author.id)] = game
+
+                #Passage de la partie en phase 2
+                self.tasks[str(msg.guild.id)][str(msg.author.id)].cancel()
+                self.tasks[str(msg.guild.id)][str(msg.author.id)] = asyncio.create_task(self.wait_for_victory(msg.guild.id, game))
 
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload):
