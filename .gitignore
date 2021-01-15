@@ -1,6 +1,7 @@
 #ignore machine/project specific files
 *.code-workspace
 config.json
+words
 venv
 __pycache__/
 .vscode/
