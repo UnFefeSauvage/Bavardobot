@@ -112,7 +112,7 @@ class GameCog(commands.Cog):
             game = self.games[str(msg.guild.id)][str(msg.author.id)]
             # ... et si son mot n'a pas encore été placé:
             #FIXME Autoriser n'importe quelle casse
-            if (not game["placed"]) and (game["word"] in msg.content):
+            if (not game["placed"]) and (game["word"].lower() in msg.content.lower()):
                 #TODO Valider le placement et passer le jeu en phase 2
                 pass
 
