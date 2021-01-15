@@ -5,6 +5,7 @@ words
 venv
 __pycache__/
 .vscode/
+.DS_Store
 
 #ignore data folders except the template
 resources/guilds/*
