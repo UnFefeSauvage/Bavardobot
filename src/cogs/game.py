@@ -136,7 +136,7 @@ class GameCog(commands.Cog):
     async def jouer(self, ctx):
         """Démarre une partie et te donne un mot à placer en MP"""
         if self.has_running_game(ctx.author):
-            #TODO Renvoyer les détails de sa partie à l'auteur
+            # Renvoie les détails de sa partie à l'auteur
             dm = ctx.author.dm_channel
             if dm is None:
                 dm = await ctx.author.create_dm()
@@ -147,7 +147,7 @@ class GameCog(commands.Cog):
 
         #else
         logger.debug(f'Starting a game for "{ctx.author}" (id: {ctx.author.id}) on "{ctx.guild}" (id: {ctx.guild.id})')
-        #TODO donne un mot à placer en MP (cooldown) et créé le jeu en cours
+        # donne un mot à placer en MP (cooldown) et créé le jeu en cours
         game = self.new_game(ctx.author.id)
         self.games[str(ctx.guild.id)][str(ctx.author.id)] = game
         self.resource_manager.write(f"guilds/{ctx.guild.id}/games.json", json.dumps(self.games[str(ctx.guild.id)], indent=4))
@@ -164,6 +164,8 @@ class GameCog(commands.Cog):
     async def unmask(self, ctx, *, mot):
         """unmask [lien] [mot]  Te permet de démasquer un mot dans le message de quelqu'un"""
         #TODO démasque un joueur sur son mot (cooldown en cas de faux) et résoud le jeu
+        #TODO tester si le message répond à un autre (type 19)
+        #* https://discord.com/developers/docs/resources/channel#message-object-message-structure
         pass
 
     @commands.command()
