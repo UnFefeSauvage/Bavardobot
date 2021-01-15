@@ -264,6 +264,23 @@ class GameCog(commands.Cog):
     #*-*-TASKS-*-*#
     #*-*-*-*-*-*-*#
 
+    @tasks.loop(seconds=30.0)
+    async def save_modified_files(self):
+        for guild_id, modified in self._is_modified.items():
+            if modified["games"]:
+                logger.debug(f"games of guild {guild_id} have been modified, writing file")
+                self.resource_manager.write(f"guilds/{guild_id}/games.json", json.dumps(self.games[guild_id], indent=4))
+                self._is_modified[guild_id]["games"] = False
+            if modified["config"]:
+                logger.debug(f"games of guild {guild_id} has been modified, writing file")
+                self.resource_manager.write(f"guilds/{guild_id}/guild_config.json", json.dumps(self.configs[guild_id]))
+                self._is_modified[guild_id]["config"] = False
+
+    @save_modified_files.before_loop
+    async def before_save_modified_files(self):
+        await self.bot.wait_until_ready()
+        logger.info("Launching save_modified_files task loop")
+
     async def wait_until_game_expires(self, guild_id, game):
         duration = self.configs[str(guild_id)]["write_timer"]
         start = game["time"]
