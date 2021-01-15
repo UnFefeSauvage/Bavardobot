@@ -19,6 +19,7 @@ logger.addHandler(handler)
 #TODO Un jeu de placement de mots dans des conversations 
 
 class GameCog(commands.Cog):
+    """Un ensemble de commandes et évènements créant un jeu de placement de mots dans des conversations"""
     def __init__(self, bot, resource_manager):
         logger.info("Initializing Game cog...")
         self.bot = bot
