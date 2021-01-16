@@ -102,11 +102,12 @@ class GameCog(commands.Cog):
             self._is_modified[str(guild.id)] = {"games": False, "config": False}
             self.ready_guilds.append(guild.id)
         else:
-            dm = guild.owner.dm_channel()
+            dm = guild.owner.dm_channel
             if dm is None:
-                dm = guild.owner.create_dm()
-                dm.send(f"Bonjour! Je viens d'arriver sur {guild.name} et j'ai malheureusement échoué à initialiser le jeu pour le serveur :<\n"
-                      + f"Vous pouvez réessayer d'initialiser le jeu en utilisant la commande `=init_game` n'importe où sur le serveur.")
+                dm = await guild.owner.create_dm()
+
+            await dm.send(f"Bonjour! Je viens d'arriver sur {guild.name} et j'ai malheureusement échoué à initialiser le jeu pour le serveur :<\n"
+                    + f"Vous pouvez réessayer d'initialiser le jeu en utilisant la commande `=init_game` n'importe où sur le serveur.")
 
     @commands.Cog.listener()
     async def on_message(self, msg):
@@ -247,10 +248,11 @@ class GameCog(commands.Cog):
 
 
     @commands.command()
-    async def unmask(self, ctx, *, mot):
+    async def unmask(self, ctx, ping, *, mot):
         """unmask [lien] [mot]  Te permet de démasquer un mot dans le message de quelqu'un"""
         #TODO démasque un joueur sur son mot (cooldown en cas de faux) et résoud le jeu
-        #TODO tester si le message répond à un autre (type 19)
+        # ///TODO tester si le message répond à un autre (type 19)
+        #TODO Ping?
         #* https://discord.com/developers/docs/resources/channel#message-object-message-structure
         pass
 
@@ -306,8 +308,8 @@ class GameCog(commands.Cog):
 
         #Supprimer la partie
         del self.games[str(guild_id)][str(game["user_id"])]
-        self.resource_manager.write(f"guilds/{guild_id}/games.json", json.dumps(self.games[str(guild_id)], indent=4) )
-    
+        self._is_modified[str(guild_id)]["games"] = True
+
     async def wait_for_victory(self, guild_id, game):
         duration = self.configs[str(guild_id)]["find_timer"]
         start = game["time_placed"]
