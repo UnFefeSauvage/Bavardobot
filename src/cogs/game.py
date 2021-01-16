@@ -237,8 +237,8 @@ class GameCog(commands.Cog):
         # donne un mot à placer en MP (cooldown) et créé le jeu en cours
         game = self.new_game(ctx.author.id)
         self.games[str(ctx.guild.id)][str(ctx.author.id)] = game
-        self.resource_manager.write(f"guilds/{ctx.guild.id}/games.json", json.dumps(self.games[str(ctx.guild.id)], indent=4))
-        asyncio.create_task(self.wait_until_game_expires(ctx.guild.id, game))
+        self._is_modified[str(ctx.guild.id)]["games"] = True
+        self.tasks[str(ctx.guild.id)][str(ctx.author.id)] =  asyncio.create_task(self.wait_until_game_expires(ctx.guild.id, game))
         dm = ctx.author.dm_channel
         if dm is None:
             dm = await ctx.author.create_dm()
