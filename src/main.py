@@ -22,7 +22,15 @@ logger.addHandler(handler)
 resource_manager = resources.ResourcesManager("resources")
 config = json.loads(resource_manager.read("config.json"))
 
-bot = commands.Bot(command_prefix=config["prefix"])
+#Ce que le bot a l'intention d'utiliser
+bot_intents = discord.Intents(
+    messages=True,
+    members=True,
+    guilds=True,
+    dm_messages=True
+)
+
+bot = commands.Bot(command_prefix=config["prefix"], intents=bot_intents)
 
 @bot.event
 async def on_ready():
