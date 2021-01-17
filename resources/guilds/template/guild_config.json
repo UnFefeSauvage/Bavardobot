@@ -1,6 +1,5 @@
 {
     "activated": true,
-    "whitelist": false,
     "write_timer": 21600,
     "find_timer": 10800,
     "points_per_word": 500,
