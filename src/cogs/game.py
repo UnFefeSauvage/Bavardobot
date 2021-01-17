@@ -159,7 +159,7 @@ class GameCog(commands.Cog):
             if (not game["placed"]) and (game["word"].lower() in msg.content.lower()):
                 #Valider le placement et mettre à jour la partie
                 game["placed"] = True
-                game["msg_link"] = msg.jump_url
+                game["msg_link"] = [msg.guild.id, msg.channel.id, msg.id]
                 game["msg_content"] = msg.content
                 game["msg_id"] = msg.id
                 game["time_placed"] = int(time.time())
