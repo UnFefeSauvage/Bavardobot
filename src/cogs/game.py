@@ -525,8 +525,6 @@ class GameCog(commands.Cog):
             await ctx.send("Erreur d'initialisation! Le jeu risque de se comporter anormalement. Je vous consille de réessayer.")
 
         
-            
-
     #*-*-*-*-*-*-*#
     #*-*-TASKS-*-*#
     #*-*-*-*-*-*-*#
