@@ -366,7 +366,7 @@ class GameCog(commands.Cog):
 
     @commands.command()
     async def unmask(self, ctx, ping, *, mot):
-        """unmask [lien] [mot]  Te permet de démasquer un mot dans le message de quelqu'un"""
+        """unmask [ping] [mot]  Te permet de démasquer un mot dans le message de quelqu'un"""
 
         if not self.has_running_game(ctx.message.author):
             await ctx.send("Tu dois toi même jouer pour pouvoir utiliser cette commande!")
@@ -458,6 +458,37 @@ class GameCog(commands.Cog):
         
         await ctx.send(embed=classement)
 
+    @commands.command()
+    @commands.has_guild_permissions(administrator=True)
+    async def config(self, ctx, key=None, value=None):
+        """config [key] [value] (admin only)"""
+        guild_id = str(ctx.guild.id)
+        config = self.configs[guild_id]
+        #Si aucun argument n'est fourni, envoyer la liste des réglages
+        if not key:
+            config_str = "```css\nSettings:\n"
+            for key, value in config.items():
+                config_str += f"{key}: {value}\n"
+            config_str += "```"
+            await ctx.send(config_str)
+            return
+        
+        #Sinon
+        if not (key in config.keys()):
+            await ctx.send(f"'{key}' n'est pas un réglage valide")
+            return
+        
+        if not value:
+            await ctx.send(f"```css\n{key}: {config[key]}\n```")
+        else:
+            #! Pour l'instant tous les paramètres sont des int mais ça ne saurait durer
+            config[key] = int(value)
+            self.configs[guild_id] = config
+            self.tag_as_modified(guild_id, CONFIG)
+            await ctx.send(f"```css\n{key}: {config[key]}\n```")
+                
+            
+            
 
     #*-*-*-*-*-*-*#
     #*-*-TASKS-*-*#
