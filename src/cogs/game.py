@@ -151,7 +151,7 @@ class GameCog(commands.Cog):
         guild_id = str(msg.guild.id)
         channel_id = str(msg.channel.id)
         message_id = str(msg.id)
-        author_id = str(msg.guild.id)
+        author_id = str(msg.author.id)
         #Si l'auteur a une partie en cours sur le serveur
         if self.has_running_game(msg.author):
             game = self.games[guild_id][author_id]
