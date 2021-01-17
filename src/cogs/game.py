@@ -145,9 +145,14 @@ class GameCog(commands.Cog):
     async def on_guild_join(self, guild : discord.Guild ):
         logger.info(f'Initializing data for guild "{guild.name}" (id: {guild.id})')
         initialised = await self.create_guild_files(guild.id)
+        guild_id = str(guild.id)
         if initialised:
-            self._is_modified[str(guild.id)] = {GAMES: False, CONFIG: False, SCORES: False}
-            self.msg_cache[str(guild.id)] = {}
+            self._is_modified[guild_id] = {GAMES: False, CONFIG: False, SCORES: False}
+            self.msg_cache[guild_id] = {}
+            self.games[guild_id] = {}
+            self.tasks[guild_id] = {}
+            self.scores[guild_id] = {}
+            self.configs[guild_id] = json.loads(self.resource_manager.read(f"guilds/{guild_id}/guild_config.json"))
             self.ready_guilds.append(guild.id)
         else:
             dm = guild.owner.dm_channel
@@ -608,10 +613,14 @@ class GameCog(commands.Cog):
             os.mkdir(path)
 
             data = self.resource_manager.read("guilds/template/guild_config.json")
-            self.resource_manager.write(f"guilds/{guild_id}/config.json", data)
+            self.resource_manager.write(f"guilds/{guild_id}/guild_config.json", data)
 
             data = self.resource_manager.read("guilds/template/games.json")
             self.resource_manager.write(f"guilds/{guild_id}/games.json", data)
+
+            data = self.resource_manager.read("guilds/template/scores.json")
+            self.resource_manager.write(f"guilds/{guild_id}/scores.json", data)
+
         except:
             logger.warning(f"Initialisation failed for guild {guild_id}")
             return False
