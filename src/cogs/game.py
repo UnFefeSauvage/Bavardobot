@@ -224,20 +224,24 @@ class GameCog(commands.Cog):
 
         #Si le serveur n'est pas initialisé, quitter
         if not (int(guild_id) in self.ready_guilds):
+            logger.debug("Exiting on_raw_message_edit: guild not in ready_guilds")
             return
         #Sinon...
         #Si l'auteur n'a pas de partie en cours, quitter
-        if author_id in self.games[guild_id]:
+        if not (author_id in self.games[guild_id]):
+            logger.debug("Exiting on_raw_message_edit: user doesn't have a running game")
             return
         #Sinon...
         game = self.games[guild_id][author_id]
 
         #Si le joueur n'a pas encore placé son mot, quitter
         if not game["placed"]:
+            logger.debug("Exiting on_raw_message_edit: word is not yet placed")
             return
 
         #if the message is not the winning message, quit
-        if not (game["msg_id"] == message_id):
+        if not (str(game["msg_id"]) == message_id):
+            logger.debug("Exiting on_raw_message_edit: the message isn't a winning one")
             return
         
         #Si le mot a disparu du message, l'invalider
@@ -260,7 +264,9 @@ class GameCog(commands.Cog):
             if dm is None:
                 dm = await author.create_dm()
             game_embed = self.get_game_info_embed(author)
-            await dm.send(f'Tu as supprimé le mot de ton message gagnant dans "{guild.name}"! Ton placement est invalidé, voilà les détails de ta partie:', embed=game_embed)
+            await dm.send(f'Tu as supprimé le mot de ton message gagnant dans "{guild.name}"! Ton placement est invalidé, tu dois replacer ton mot dans un nouveau message...', embed=game_embed)
+        else:
+            logger.debug("Exiting on_raw_message_edit: Word still in content")
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
