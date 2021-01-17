@@ -492,7 +492,39 @@ class GameCog(commands.Cog):
             self.tag_as_modified(guild_id, CONFIG)
             await ctx.send(f"```css\n{key}: {config[key]}\n```")
                 
-            
+    @commands.command()
+    @commands.has_guild_permissions(administrator=True)
+    async def init_game(self, ctx, arg=None):
+        """=init_game [arg] (admin only) (ré)initialise le jeu sur le serveur"""
+        guild_id = str(ctx.guild.id)
+        if int(guild_id) in self.ready_guilds and arg != 'force':
+            await ctx.send("Le jeu est déjà initialisé sur ce serveur. Si vous souhaitez réinitialiser les données, tapez `=init_game force`")
+            return
+        
+        if int(guild_id) in self.ready_guilds and arg == 'force':
+            await ctx.send("Réinitialisation du jeu...")
+            self.ready_guilds.remove(int(guild_id))
+
+            for user_id, task in self.tasks[guild_id].items():
+                task.cancel()
+        else:
+            await ctx.send("Initialisation du jeu...")
+        
+        initialized = await self.create_guild_files(guild_id)
+        
+        if initialized:
+            self._is_modified[guild_id] = {GAMES: False, CONFIG: False, SCORES: False}
+            self.msg_cache[guild_id] = {}
+            self.games[guild_id] = {}
+            self.tasks[guild_id] = {}
+            self.scores[guild_id] = {}
+            self.configs[guild_id] = json.loads(self.resource_manager.read(f"guilds/{guild_id}/guild_config.json"))
+            self.ready_guilds.append(int(guild_id))
+            await ctx.send("Initialisation terminée!")
+        else:
+            await ctx.send("Erreur d'initialisation! Le jeu risque de se comporter anormalement. Je vous consille de réessayer.")
+
+        
             
 
     #*-*-*-*-*-*-*#
@@ -610,7 +642,11 @@ class GameCog(commands.Cog):
         logger.info(f"Creating new game files for guild {guild_id}...")
         path = os.path.normpath( f"{self.resource_manager.path}/guilds/{guild_id}" )
         try:
-            os.mkdir(path)
+            try:
+                os.mkdir(path)
+            except FileExistsError:
+                #Le dossier existe déjà
+                pass
 
             data = self.resource_manager.read("guilds/template/guild_config.json")
             self.resource_manager.write(f"guilds/{guild_id}/guild_config.json", data)
