@@ -1,8 +1,8 @@
 {
     "activated": true,
     "whitelist": false,
-    "write_timer": 86400,
-    "find_timer": 36000,
+    "write_timer": 21600,
+    "find_timer": 10800,
     "points_per_word": 500,
     "points_per_find": 100,
     "mistake_cost": 25
