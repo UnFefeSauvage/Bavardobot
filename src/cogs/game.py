@@ -384,7 +384,11 @@ class GameCog(commands.Cog):
         if target.id == ctx.author.id:
             await ctx.send("Tu ne peux pas te démasquer toi même!")
             return
-        
+
+        if not self.has_running_game(target):
+            await ctx.send("Cette personne n'a pas de partie en cours!")
+            return
+
         guild_id = str(ctx.guild.id)
         target_id = str(target.id)
         author_id = str(ctx.author.id)
@@ -401,6 +405,9 @@ class GameCog(commands.Cog):
             self.tasks[guild_id][target_id].cancel()
             #NEXT Retirer des points à target?
 
+            #Confirmer la réussite
+            await ctx.send(f'{mot} était bien le mot de {target.name}! Tu as gagné {self.configs[guild_id]["points_per_find"]} points!')
+
             #Prévenir 'target' que son mot a été trouvé
             dm = target.dm_channel
             if dm is None:
@@ -413,8 +420,17 @@ class GameCog(commands.Cog):
             self.tag_as_modified(guild_id, SCORES)
             
         else:
-            #TODO Retirer des points à l'auteur du message
-            #TODO Si plus de points, cooldown?
+            if self.scores[guild_id][author_id] > 0:
+                await ctx.send(f'"{mot}" n\'est pas le mot de {target.name}! Tu as perdu {self.configs[guild_id]["mistake_cost"]} points!' )
+                #TODO Retirer des points à l'auteur du message
+                self.scores[guild_id][author_id] = max(0, self.scores[guild_id][author_id] - self.configs[guild_id]["mistake_cost"])
+                self.tag_as_modified(guild_id, SCORES)
+            else:
+                #TODO définir le cooldown
+                await ctx.send(f'"{mot}" n\'est pas le mot de {target.name}! Cooldown de x minutes' )
+                #TODO Appliquer le cooldown
+
+                pass
         
 
     @commands.command()
