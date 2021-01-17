@@ -345,7 +345,14 @@ class GameCog(commands.Cog):
                 return
         
         logger.debug(f"Find timer of user {game['user_id']} in guild {guild_id} timed out! Processing win...")
-        #TODO Inform the player
+        #Informer le joueur
+        guild = self.bot.get_guild(int(guild_id))
+        player = guild.get_member(int(game['user_id']))
+        dm = player.dm_channel
+        if dm is None:
+            dm = await player.create_dm()
+        await dm.send(f'Ta partie sur le serveur {guild.name} est terminée! Tu as gagné x points sur le classement de "{guild.name}"! Tu peux rejouer en tapant `=jouer` sur le serveur.')
+
         #TODO Add points to the player
         #TODO (Maybe announce it?)
 
