@@ -316,16 +316,16 @@ class GameCog(commands.Cog):
                 logger.debug(f"Game (phase 1) of user {game['user_id']} in guild {guild_id} has been cancelled")
                 return
         
-        #else
+        #Si le temps est écoulé...
         logger.debug(f"Game of user {game['user_id']} in guild {guild_id} has expired, deleting...")
 
         #Informer le joueur
-        guild = discord.utils.get(self.bot.guilds, id=guild_id)
-        player = discord.utils.get(guild.members, id=game['user_id'])
-        dm = player.dm_channel()
-            if dm is None:
-                dm = player.create_dm()
-        dm.send(f'Ta partie sur le serveur {guild.name} a expiré! Tu peux rejouer en tapant `=jouer` sur le serveur.')
+        guild = self.bot.get_guild(int(guild_id))
+        player = guild.get_member(int(game['user_id']))
+        dm = player.dm_channel
+        if dm is None:
+            dm = await player.create_dm()
+        await dm.send(f'Ta partie sur le serveur {guild.name} a expiré! Tu peux rejouer en tapant `=jouer` sur le serveur.')
 
         #Supprimer la partie
         del self.games[str(guild_id)][str(game["user_id"])]
