@@ -285,17 +285,18 @@ class GameCog(commands.Cog):
         game = self.games[guild_id][author_id]
         if game["placed"]:
             #Invalider la partie
-            game["placed"] = False
+            self.cancel_win(guild_id,author_id)
+            
+            #Informer le joueur
+            guild = self.bot.get_guild(int(guild_id))
+            player = guild.get_member(int(author_id))
 
-            self.games[guild_id][author_id] = game
-            self.tag_as_modified(guild_id, GAMES)
-
-            #Supprimer le message du cache
-            del self.msg_cache[guild_id][channel_id][message_id]
-
-            #Changer de tâche d'attente
-            self.tasks[guild_id][author_id].cancel()
-            self.tasks[guild_id][author_id] = asyncio.create_task(self.wait_until_game_expires(guild_id, game))
+            dm = player.dm_channel
+            if dm is None:
+                dm = await player.create_dm()
+            
+            game_embed = self.get_game_info_embed(player)
+            await dm.send(f"Le message où tu avais placé ton mot dans \"{guild.name}\" a été supprimé! Le placement a été annulé, tu dois le replacer...", embed=game_embed)
             
 
     
