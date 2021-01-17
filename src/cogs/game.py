@@ -67,9 +67,10 @@ class GameCog(commands.Cog):
         self.save_modified_files.start()
         logger.info("Finished Game cog initialisation!")
     
+    #Invoquée après la connection du bot
     @commands.Cog.listener()
     async def on_ready(self):
-        #* Création des coroutines d'attente d'expiration des parties
+        #Création des coroutines d'attente d'expiration des parties
         self.tasks = {}
         for guild_id, games in self.games.items():
             self.tasks[guild_id] = {}
@@ -80,9 +81,6 @@ class GameCog(commands.Cog):
                 else:
                     self.tasks[guild_id][user_id] = asyncio.create_task(self.wait_for_victory(guild_id, game))
 
-
-    #TODO Gérer les timers de partie
-    #* https://docs.python.org/3/library/asyncio-task.html#task-object
     
     # Invoquée à chaque commande: s'il renvoie faux, la commande n'est pas lancée
     def cog_check(self, ctx):
@@ -122,7 +120,7 @@ class GameCog(commands.Cog):
             game = self.games[str(msg.guild.id)][str(msg.author.id)]
             # ... et si son mot n'a pas encore été placé:
             if (not game["placed"]) and (game["word"].lower() in msg.content.lower()):
-                #Valider le placement
+                #Valider le placement et mettre à jour la partie
                 game["placed"] = True
                 game["msg_link"] = msg.jump_url
                 game["msg_content"] = msg.content
@@ -136,7 +134,7 @@ class GameCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload):
-        #TODO vérifier que l'auteur ne triche pas (invalider si triche)
+        #* Détails du payload:
         #* https://discordpy.readthedocs.io/en/latest/api.html?highlight=on_message#rawmessageupdateevent
         required_data =["author", "content", "guild_id","id"]
         has_data = True
