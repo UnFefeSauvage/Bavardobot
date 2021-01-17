@@ -277,10 +277,55 @@ class GameCog(commands.Cog):
     async def unmask(self, ctx, ping, *, mot):
         """unmask [lien] [mot]  Te permet de démasquer un mot dans le message de quelqu'un"""
         #TODO démasque un joueur sur son mot (cooldown en cas de faux) et résoud le jeu
-        # ///TODO tester si le message répond à un autre (type 19)
-        #TODO Ping?
-        #* https://discord.com/developers/docs/resources/channel#message-object-message-structure
-        pass
+
+        if not self.has_running_game(ctx.message.author):
+            await ctx.send("Tu dois toi même jouer pour pouvoir utiliser cette commande!")
+            return
+
+        mot = mot.strip(' \n')
+        mentions = ctx.message.mentions
+
+        if len(mentions) != 1:
+            await ctx.send(f"La commande prend exactement une mention! (pas {len(mentions)})")
+            return
+        
+        target = mentions[0]
+
+        if target.id == ctx.author.id:
+            await ctx.send("Tu ne peux pas te démasquer toi même!")
+            return
+        
+        guild_id = str(ctx.guild.id)
+        target_id = str(target.id)
+        author_id = str(ctx.author.id)
+        good_guess = False
+        if str(target.id) in self.games[guild_id].keys():
+            if self.games[guild_id][target_id]["word"] == mot:
+                good_guess = True
+        
+        if good_guess:
+            #Arrêter la partie de 'target'
+            del self.games[guild_id][target_id]
+            self.tag_as_modified(guild_id, GAMES)
+            
+            self.tasks[guild_id][target_id].cancel()
+            #NEXT Retirer des points à target?
+
+            #Prévenir 'target' que son mot a été trouvé
+            dm = target.dm_channel
+            if dm is None:
+                dm = await target.create_dm()
+            
+            await dm.send(f"Ton mot a été trouvé sur "{ctx.guild.name}"! Ta partie est arrêtée. Tu peux rejouer en tapant `=jouer` sur le serveur.")
+            
+            #Donner des points à l'auteur de la commande
+            self.scores[guild_id][author_id] += self.configs[guild_id]["points_per_find"]
+            self.tag_as_modified(guild_id, SCORES)
+            
+        else:
+            #TODO Retirer des points à l'auteur du message
+            #TODO Si plus de points, cooldown?
+        
 
     @commands.command()
     async def classement(self, ctx):
