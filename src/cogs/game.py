@@ -392,3 +392,9 @@ class GameCog(commands.Cog):
             "msg_content": False,
             "msg_id": False
         }
+
+    def tag_as_modified(self, guild_id, filetype):
+        guild_id = str(guild_id)
+        if filetype in (GAMES, CONFIG, SCORES):
+            self._is_modified[guild_id][filetype] = True
+        
