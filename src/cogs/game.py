@@ -76,26 +76,39 @@ class GameCog(commands.Cog):
     #Invoquée après la connection du bot
     @commands.Cog.listener()
     async def on_ready(self):
-        #Mise en cache des message de placement des mots
+        #Mise en cache des messages de placement des mots
         for guild_id, games in self.games.items():
             self.msg_cache[guild_id] = {}
             guild = self.bot.get_guild(int(guild_id))
             for user_id, game in games.items():
-                channel_id = str(game["msg_link"][1])
-                message_id = str(game["msg_link"][2])
-                
-                if not (channel_id in self.msg_cache[guild_id].keys()):
-                    self.msg_cache[guild_id][channel_id] = {}
-                
-                channel = guild.get_channel(int(channel_id))
-                try:
-                    self.msg_cache[guild_id][channel_id][message_id] = await channel.fetch_message(int(message_id))
-                except discord.errors.NotFound:
-                    #TODO Invalider la partie pour cause de message supprimé
-                    pass
-                else:
-                    #TODO Vérifier la potentielle modification du message
-                    pass
+                if game["placed"]:
+                    channel_id = str(game["msg_link"][1])
+                    message_id = str(game["msg_link"][2])
+                    
+                    if not (channel_id in self.msg_cache[guild_id].keys()):
+                        self.msg_cache[guild_id][channel_id] = {}
+                    
+                    channel = guild.get_channel(int(channel_id))
+                    try:
+                        self.msg_cache[guild_id][channel_id][message_id] = await channel.fetch_message(int(message_id))
+                    except discord.errors.NotFound:
+                        #FIXME En cas de reconnexion, si la partie est déjà gagnée, elle sera annulée quand même
+                        #Invalider la partie pour cause de message supprimé
+                        self.cancel_win(guild_id, user_id)
+
+                        player = guild.get_member(int(user_id))
+                        game_embed = self.get_game_info_embed(player)
+                        if player is None:
+                            pass
+                        else:
+                            dm = player.dm_channel
+                            if dm is None:
+                                dm = await player.create_dm()
+                            #! Si la création de dm échoue, on_ready s'arrête, ce qui est une erreur critique pour le fonctionnement du jeu
+                            await dm.send(f"Le message où tu as placé ton mot a été supprimé! Ta partie a été invalidée!", embed=game_embed)
+                    else:
+                        #TODO Vérifier la potentielle modification du message
+                        pass
 
         #Création des coroutines d'attente d'expiration des parties
         self.tasks = {}
