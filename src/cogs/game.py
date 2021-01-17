@@ -21,7 +21,7 @@ GAMES = "games"
 CONFIG = "config"
 SCORES = "scores"
 
-#TODO Un jeu de placement de mots dans des conversations 
+#Un jeu de placement de mots dans des conversations 
 
 class GameCog(commands.Cog):
     """Un ensemble de commandes et évènements créant un jeu de placement de mots dans des conversations"""
@@ -38,7 +38,8 @@ class GameCog(commands.Cog):
         self.msg_cache = {}
 
         logger.debug("Loading words...")
-        # Load the words
+
+        #Chargement des mots
         self.words = []
         with open("resources/words", 'r') as file:
             line = file.readline()
@@ -527,8 +528,6 @@ class GameCog(commands.Cog):
             dm = await player.create_dm()
         await dm.send(f'Ta partie sur le serveur {guild.name} est terminée! Tu as gagné {self.configs[guild_id]["points_per_word"]} points sur le classement de "{guild.name}"! Tu peux rejouer en tapant `=jouer` sur le serveur.')
 
-        #TODO Add points to the player
-        #TODO (Maybe announce it?)
 
     #*-*-*-*-*-*-*-*-*#
     #*-*-UTILITIES-*-*#
