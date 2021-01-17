@@ -456,26 +456,36 @@ class GameCog(commands.Cog):
         self.tag_as_modified(guild_id, GAMES)
 
     async def wait_for_victory(self, guild_id, game):
-        duration = self.configs[str(guild_id)]["find_timer"]
+        guild_id = str(guild_id)
+        user_id = str(game['user_id'])
+        duration = self.configs[guild_id]["find_timer"]
         start = game["time_placed"]
         now = int(time.time())
         wait_time = duration - (now - start)
-        logger.debug(f"Phase 2 of the user {game['user_id']}'s game in guild {guild_id} has begun")
+        logger.debug(f"Phase 2 of the user {user_id}'s game in guild {guild_id} has begun")
         if wait_time > 0:
             try:
                 await asyncio.sleep(wait_time)
             except asyncio.CancelledError:
-                logger.debug(f"Game (phase 2) of user {game['user_id']} in guild {guild_id} has been cancelled")
+                logger.debug(f"Game (phase 2) of user {user_id} in guild {guild_id} has been cancelled")
                 return
         
-        logger.debug(f"Find timer of user {game['user_id']} in guild {guild_id} timed out! Processing win...")
+        logger.debug(f"Find timer of user {user_id} in guild {guild_id} timed out! Processing win...")
+
+        #Supprimer la partie
+        del self.games[guild_id][user_id]
+        self.tag_as_modified(guild_id, GAMES)
+
+        #Ajouter des points au joueur
+        self.scores[guild_id][user_id] += self.configs[guild_id]["points_per_word"]
+
         #Informer le joueur
         guild = self.bot.get_guild(int(guild_id))
-        player = guild.get_member(int(game['user_id']))
+        player = guild.get_member(int(user_id))
         dm = player.dm_channel
         if dm is None:
             dm = await player.create_dm()
-        await dm.send(f'Ta partie sur le serveur {guild.name} est terminée! Tu as gagné x points sur le classement de "{guild.name}"! Tu peux rejouer en tapant `=jouer` sur le serveur.')
+        await dm.send(f'Ta partie sur le serveur {guild.name} est terminée! Tu as gagné {self.configs[guild_id]["points_per_word"]} points sur le classement de "{guild.name}"! Tu peux rejouer en tapant `=jouer` sur le serveur.')
 
         #TODO Add points to the player
         #TODO (Maybe announce it?)
