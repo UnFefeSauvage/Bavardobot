@@ -94,6 +94,10 @@ class GameCog(commands.Cog):
 
         return True
     
+    async def close(self):
+        #TODO Save all files
+        pass
+    
     #TODO gestion d'erreur
 
     #*-*-*-*-*-*-*-*-*#
