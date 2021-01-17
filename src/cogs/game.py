@@ -28,8 +28,8 @@ class GameCog(commands.Cog):
         self.games = {}
         self.tasks = {}
         self.configs = {}
+        self.scores = {}
         self._is_modified = {}
-        os.listdir()
 
         logger.debug("Loading words...")
         # Load the words
@@ -46,22 +46,25 @@ class GameCog(commands.Cog):
 
         for guild_id in guilds_to_load:
             logger.debug(f"Loading guild {guild_id}")
+
+            #Config
             self.configs[guild_id] = json.loads(resource_manager.read(f"guilds/{guild_id}/guild_config.json"))
-            games = json.loads(resource_manager.read(f"guilds/{guild_id}/games.json"))
+            
+            #Games
+            self.games[guild_id] = json.loads(resource_manager.read(f"guilds/{guild_id}/games.json"))
 
-            self.games[guild_id] = {}
-            self._is_modified[guild_id] = {"games": False, "config": False}
+            #Scores 
+            self.scores[guild_id] = json.loads(resource_manager.read(f"guilds/{guild_id}/scores.json"))
 
-            logger.debug(f"loading games for guild {guild_id}")
-            for user_id, game in games.items():
-                logger.debug(f"{user_id}: {game}")
-                self.games[guild_id][user_id] = game
+            #Modification flags
+            self._is_modified[guild_id] = {"games": False, "config": False, "scores": False}
+
             
             self.ready_guilds.append(int(guild_id))
             logger.debug(f"Initialised guild {guild_id}")
 
-            
-
+        #Démarrage de la boucle de sauvegarde
+        self.save_modified_files.start()
         logger.info("Finished Game cog initialisation!")
     
     @commands.Cog.listener()
