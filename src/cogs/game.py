@@ -127,6 +127,7 @@ class GameCog(commands.Cog):
                 game["msg_id"] = msg.id
                 game["time_placed"] = int(time.time())
                 self.games[str(msg.guild.id)][str(msg.author.id)] = game
+                self._is_modified[str(msg.guild.id)]["games"] = True
 
                 #Passage de la partie en phase 2
                 self.tasks[str(msg.guild.id)][str(msg.author.id)].cancel()
@@ -152,7 +153,7 @@ class GameCog(commands.Cog):
             if "guild_id" in payload.data.keys():
                 guild_id = payload.data["guild_id"]
             else:
-                logger.info("on_raw_message_edit did not get the guild_id of the message: assuming it is not in a guild")
+                logger.debug("on_raw_message_edit did not get the guild_id of the message: assuming it is not in a guild")
                 return
             
             guild = self.bot.get_guild(int(guild_id))
@@ -191,7 +192,7 @@ class GameCog(commands.Cog):
         #Si le mot a disparu du message, l'invalider
         if not (game["word"] in content):
             self.games[guild_id][author_id]["placed"] = False
-            self.resource_manager.write(f"guilds/{guild_id}/games.json", json.dumps(self.games[guild_id], indent=4))
+            self._is_modified[guild_id]["games"] = True
 
             #Arrêt du timer de partie
             logger.debug(f"Stopping game of {author_id} in {guild_id} for hiding his word.")
@@ -286,6 +287,7 @@ class GameCog(commands.Cog):
 
     async def wait_until_game_expires(self, guild_id, game):
         duration = self.configs[str(guild_id)]["write_timer"]
+        logger.debug(f"Waiting for game of user {game['user_id']} in guild {guild_id} to expire...")
         start = game["time"]
         now = int(time.time())
         wait_time = duration - (now - start)
@@ -316,6 +318,7 @@ class GameCog(commands.Cog):
         start = game["time_placed"]
         now = int(time.time())
         wait_time = duration - (now - start)
+        logger.debug(f"Phase 2 of the user {game['user_id']}'s game in guild {guild_id} has begun")
         if wait_time > 0:
             try:
                 await asyncio.sleep(wait_time)
@@ -343,7 +346,6 @@ class GameCog(commands.Cog):
         game = self.games[str(member.guild.id)][str(member.id)]
         if not game["placed"]:
             timer = self.configs[str(member.guild.id)]["write_timer"] - (int(time.time()) - game["time"])
-        hours = timer // 3600 
             remaining_time = "%sh %smin %ss" % (timer//3600, (timer%3600)//60, (timer%60))
             embed = discord.Embed(title="Détails de ta partie:", color=member.color).add_field(name="Mot à placer", value=game["word"]).add_field(name="Temps restant", value=remaining_time)
         else:
