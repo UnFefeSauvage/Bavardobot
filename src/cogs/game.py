@@ -399,7 +399,27 @@ class GameCog(commands.Cog):
     async def classement(self, ctx):
         """Affiche le classement des joueurs du serveur"""
         #TODO affiche le classement des joueurs
-        pass
+        guild_id = str(ctx.guild.id)
+        classement = discord.Embed(title="Classement")
+        scores = self.scores[guild_id]
+        #tri du dictionnaire par score
+        sorted_scores = sorted(scores.items(), key=operator.itemgetter(1), reverse=True)
+        names = ""
+        scores = ""
+        ranks = ""
+        rank = 1
+        for user_id, score in sorted_scores:
+            ranks += f"{rank}\n"
+            names += f"<@{user_id}>\n"
+            scores += f"{score}\n"
+            rank += 1
+
+        classement.add_field(name="Rang", value=ranks)
+        classement.add_field(name="Nom", value=names)
+        classement.add_field(name="Score", value=scores)
+        
+        await ctx.send(embed=classement)
+
 
     #*-*-*-*-*-*-*#
     #*-*-TASKS-*-*#
