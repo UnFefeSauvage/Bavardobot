@@ -35,6 +35,7 @@ class GameCog(commands.Cog):
         self.configs = {}
         self.scores = {}
         self._is_modified = {}
+        self.msg_cache = {}
 
         logger.debug("Loading words...")
         # Load the words
@@ -75,6 +76,27 @@ class GameCog(commands.Cog):
     #Invoquée après la connection du bot
     @commands.Cog.listener()
     async def on_ready(self):
+        #Mise en cache des message de placement des mots
+        for guild_id, games in self.games.items():
+            self.msg_cache[guild_id] = {}
+            guild = self.bot.get_guild(int(guild_id))
+            for user_id, game in games.items():
+                channel_id = str(game["msg_link"][1])
+                message_id = str(game["msg_link"][2])
+                
+                if not (channel_id in self.msg_cache[guild_id].keys()):
+                    self.msg_cache[guild_id][channel_id] = {}
+                
+                channel = guild.get_channel(int(channel_id))
+                try:
+                    self.msg_cache[guild_id][channel_id][message_id] = await channel.fetch_message(int(message_id))
+                except discord.errors.NotFound:
+                    #TODO Invalider la partie pour cause de message supprimé
+                    pass
+                else:
+                    #TODO Vérifier la potentielle modification du message
+                    pass
+
         #Création des coroutines d'attente d'expiration des parties
         self.tasks = {}
         for guild_id, games in self.games.items():
@@ -110,6 +132,7 @@ class GameCog(commands.Cog):
         initialised = await self.create_guild_files(guild.id)
         if initialised:
             self._is_modified[str(guild.id)] = {GAMES: False, CONFIG: False, SCORES: False}
+            self.msg_cache[str(guild.id)] = {}
             self.ready_guilds.append(guild.id)
         else:
             dm = guild.owner.dm_channel
@@ -137,6 +160,12 @@ class GameCog(commands.Cog):
                 game["time_placed"] = int(time.time())
                 self.games[str(msg.guild.id)][str(msg.author.id)] = game
                 self.tag_as_modified(msg.guild.id, GAMES)
+
+                #Stockage du message en cache
+                if not channel_id in self.msg_cache[guild_id]:
+                    self.msg_cache[guild_id][channel_id] = {}
+                
+                self.msg_cache[guild_id][channel_id][message_id] = msg
 
                 #Passage de la partie en phase 2
                 self.tasks[str(msg.guild.id)][str(msg.author.id)].cancel()
@@ -232,7 +261,39 @@ class GameCog(commands.Cog):
     async def on_raw_message_delete(self, payload):
         #TODO vérifier que l'auteur ne triche pas (invalider si triche)
         #* https://discordpy.readthedocs.io/en/latest/api.html?highlight=on_message#rawmessagedeleteevent
-        pass
+        if not (payload.guild_id in self.ready_guilds):
+            return
+        
+        guild_id = str(payload.guild_id)
+        channel_id = str(payload.channel_id)
+        message_id = str(payload.message_id)
+
+        try:
+            #Récupérer le message dans le cache
+            msg = self.msg_cache[guild_id][channel_id][message_id]
+        except KeyError:
+            #Si le message n'est pas dans le cache, c'est qu'il ne nous intéresse pas
+            return
+
+        assert(self.has_running_game(msg.author))
+
+        author_id = str(msg.author.id)
+        game = self.games[guild_id][author_id]
+        if game["placed"]:
+            #Invalider la partie
+            game["placed"] = False
+
+            self.games[guild_id][author_id] = game
+            self.tag_as_modified(guild_id, GAMES)
+
+            #Supprimer le message du cache
+            del self.msg_cache[guild_id][channel_id][message_id]
+
+            #Changer de tâche d'attente
+            self.tasks[guild_id][author_id].cancel()
+            self.tasks[guild_id][author_id] = asyncio.create_task(self.wait_until_game_expires(guild_id, game))
+            
+
     
     #*-*-*-*-*-*-*-*-*#
     #*-*-COMMANDS--*-*#
