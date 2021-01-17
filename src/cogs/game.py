@@ -133,6 +133,14 @@ class GameCog(commands.Cog):
                 self.tasks[str(msg.guild.id)][str(msg.author.id)].cancel()
                 self.tasks[str(msg.guild.id)][str(msg.author.id)] = asyncio.create_task(self.wait_for_victory(msg.guild.id, game))
 
+                #Informer le joueur
+                dm = msg.author.dm_channel
+                if dm is None:
+                    dm = await msg.author.create_dm()
+
+                game_embed = self.get_game_info_embed(msg.author)
+                await dm.send("Bravo! Tu as placé ton mot! Ta partie passe en phase 2:", embed=game_embed)
+
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload):
         #* Détails du payload:
