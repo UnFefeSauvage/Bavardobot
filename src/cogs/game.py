@@ -341,10 +341,15 @@ class GameCog(commands.Cog):
 
     def get_game_info_embed(self, member):
         game = self.games[str(member.guild.id)][str(member.id)]
-        timer = self.configs[str(member.guild.id)]["write_timer"] - (int(time.time()) - game["time"])
+        if not game["placed"]:
+            timer = self.configs[str(member.guild.id)]["write_timer"] - (int(time.time()) - game["time"])
         hours = timer // 3600 
-        remaining_time = "%sh %smin %ss" % (timer//3600, (timer%3600)//60, (timer%60))
-        embed = discord.Embed(title="Détails de ta partie:", color=member.color).add_field(name="Mot à placer", value=game["word"]).add_field(name="Temps restant", value=remaining_time)
+            remaining_time = "%sh %smin %ss" % (timer//3600, (timer%3600)//60, (timer%60))
+            embed = discord.Embed(title="Détails de ta partie:", color=member.color).add_field(name="Mot à placer", value=game["word"]).add_field(name="Temps restant", value=remaining_time)
+        else:
+            timer = self.configs[str(member.guild.id)]["find_timer"] - (int(time.time()) - game["time_placed"])
+            remaining_time = "%sh %smin %ss" % (timer//3600, (timer%3600)//60, (timer%60))
+            embed = discord.Embed(title="Détails de ta partie:", color=member.color).add_field(name="Mot placé", value=game["word"]).add_field(name="Temps avant victoire", value=remaining_time)
         return embed
         
 
