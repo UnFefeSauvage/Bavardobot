@@ -605,3 +605,26 @@ class GameCog(commands.Cog):
         if filetype in (GAMES, CONFIG, SCORES):
             self._is_modified[guild_id][filetype] = True
         
+    def cancel_win(self, guild_id, player_id):
+            guild_id = str(guild_id)
+            player_id = str(player_id)
+
+            if not (player_id in self.games[guild_id].keys()):
+                raise AssertionError(f"User {player_id} does not have a running game in guild {guild_id}!")
+
+            game = self.games[guild_id][player_id]
+            channel_id = str(game["msg_link"][1])
+            message_id = str(game["msg_link"][2])
+
+            #Invalider la partie
+            game["placed"] = False
+
+            self.games[guild_id][player_id] = game
+            self.tag_as_modified(guild_id, GAMES)
+
+            #Supprimer le message du cache
+            del self.msg_cache[guild_id][channel_id][message_id]
+
+            #Changer de tâche d'attente
+            self.tasks[guild_id][player_id].cancel()
+            self.tasks[guild_id][player_id] = asyncio.create_task(self.wait_until_game_expires(guild_id, game))
