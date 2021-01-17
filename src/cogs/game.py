@@ -16,6 +16,11 @@ handler.setFormatter(logFormatter)
 logger.addHandler(handler)
 
 
+#Tags des types de données de guildes
+GAMES = "games"
+CONFIG = "config"
+SCORES = "scores"
+
 #TODO Un jeu de placement de mots dans des conversations 
 
 class GameCog(commands.Cog):
@@ -57,7 +62,7 @@ class GameCog(commands.Cog):
             self.scores[guild_id] = json.loads(resource_manager.read(f"guilds/{guild_id}/scores.json"))
 
             #Modification flags
-            self._is_modified[guild_id] = {"games": False, "config": False, "scores": False}
+            self._is_modified[guild_id] = {GAMES: False, CONFIG: False, SCORES: False}
 
             
             self.ready_guilds.append(int(guild_id))
@@ -100,7 +105,7 @@ class GameCog(commands.Cog):
         logger.info(f'Initializing data for guild "{guild.name}" (id: {guild.id})')
         initialised = await self.create_guild_files(guild.id)
         if initialised:
-            self._is_modified[str(guild.id)] = {"games": False, "config": False}
+            self._is_modified[str(guild.id)] = {GAMES: False, CONFIG: False, SCORES: False}
             self.ready_guilds.append(guild.id)
         else:
             dm = guild.owner.dm_channel
@@ -127,7 +132,7 @@ class GameCog(commands.Cog):
                 game["msg_id"] = msg.id
                 game["time_placed"] = int(time.time())
                 self.games[str(msg.guild.id)][str(msg.author.id)] = game
-                self._is_modified[str(msg.guild.id)]["games"] = True
+                self.tag_as_modified(msg.guild.id, GAMES)
 
                 #Passage de la partie en phase 2
                 self.tasks[str(msg.guild.id)][str(msg.author.id)].cancel()
@@ -200,7 +205,7 @@ class GameCog(commands.Cog):
         #Si le mot a disparu du message, l'invalider
         if not (game["word"] in content):
             self.games[guild_id][author_id]["placed"] = False
-            self._is_modified[guild_id]["games"] = True
+            self.tag_as_modified(guild_id, GAMES)
 
             #Arrêt du timer de partie
             logger.debug(f"Stopping game of {author_id} in {guild_id} for hiding his word.")
@@ -279,14 +284,19 @@ class GameCog(commands.Cog):
     @tasks.loop(seconds=30.0)
     async def save_modified_files(self):
         for guild_id, modified in self._is_modified.items():
-            if modified["games"]:
+            if modified[GAMES]:
                 logger.debug(f"games of guild {guild_id} have been modified, writing file")
                 self.resource_manager.write(f"guilds/{guild_id}/games.json", json.dumps(self.games[guild_id], indent=4))
-                self._is_modified[guild_id]["games"] = False
-            if modified["config"]:
-                logger.debug(f"games of guild {guild_id} has been modified, writing file")
+                self._is_modified[guild_id][GAMES] = False
+            if modified[CONFIG]:
+                logger.debug(f"config of guild {guild_id} has been modified, writing file")
                 self.resource_manager.write(f"guilds/{guild_id}/guild_config.json", json.dumps(self.configs[guild_id]))
-                self._is_modified[guild_id]["config"] = False
+                self._is_modified[guild_id][CONFIG] = False
+            if modified[SCORES]:
+                logger.debug(f"scores of guild {guild_id} have been modified, writing file")
+                self.resource_manager.write(f"guilds/{guild_id}/scores.json", json.dumps(self.scores[guild_id]))
+                self._is_modified[guild_id][SCORES] = False
+                
 
     @save_modified_files.before_loop
     async def before_save_modified_files(self):
@@ -319,7 +329,7 @@ class GameCog(commands.Cog):
 
         #Supprimer la partie
         del self.games[str(guild_id)][str(game["user_id"])]
-        self._is_modified[str(guild_id)]["games"] = True
+        self.tag_as_modified(guild_id, GAMES)
 
     async def wait_for_victory(self, guild_id, game):
         duration = self.configs[str(guild_id)]["find_timer"]
