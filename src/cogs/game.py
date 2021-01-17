@@ -147,9 +147,14 @@ class GameCog(commands.Cog):
         #Si l'auteur est un bot, ignorer
         if msg.author.bot:
             return
+        
+        guild_id = str(msg.guild.id)
+        channel_id = str(msg.channel.id)
+        message_id = str(msg.id)
+        author_id = str(msg.guild.id)
         #Si l'auteur a une partie en cours sur le serveur
-        if str(msg.author.id) in self.games[str(msg.guild.id)]:
-            game = self.games[str(msg.guild.id)][str(msg.author.id)]
+        if self.has_running_game(msg.author):
+            game = self.games[guild_id][author_id]
             # ... et si son mot n'a pas encore été placé:
             if (not game["placed"]) and (game["word"].lower() in msg.content.lower()):
                 #Valider le placement et mettre à jour la partie
@@ -158,7 +163,7 @@ class GameCog(commands.Cog):
                 game["msg_content"] = msg.content
                 game["msg_id"] = msg.id
                 game["time_placed"] = int(time.time())
-                self.games[str(msg.guild.id)][str(msg.author.id)] = game
+                self.games[guild_id][author_id] = game
                 self.tag_as_modified(msg.guild.id, GAMES)
 
                 #Stockage du message en cache
@@ -168,8 +173,8 @@ class GameCog(commands.Cog):
                 self.msg_cache[guild_id][channel_id][message_id] = msg
 
                 #Passage de la partie en phase 2
-                self.tasks[str(msg.guild.id)][str(msg.author.id)].cancel()
-                self.tasks[str(msg.guild.id)][str(msg.author.id)] = asyncio.create_task(self.wait_for_victory(msg.guild.id, game))
+                self.tasks[guild_id][author_id].cancel()
+                self.tasks[guild_id][author_id] = asyncio.create_task(self.wait_for_victory(msg.guild.id, game))
 
                 #Informer le joueur
                 dm = msg.author.dm_channel
@@ -259,7 +264,6 @@ class GameCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
-        #TODO vérifier que l'auteur ne triche pas (invalider si triche)
         #* https://discordpy.readthedocs.io/en/latest/api.html?highlight=on_message#rawmessagedeleteevent
         if not (payload.guild_id in self.ready_guilds):
             return
@@ -341,7 +345,6 @@ class GameCog(commands.Cog):
     @commands.command()
     async def unmask(self, ctx, ping, *, mot):
         """unmask [lien] [mot]  Te permet de démasquer un mot dans le message de quelqu'un"""
-        #TODO démasque un joueur sur son mot (cooldown en cas de faux) et résoud le jeu
 
         if not self.has_running_game(ctx.message.author):
             await ctx.send("Tu dois toi même jouer pour pouvoir utiliser cette commande!")
@@ -381,7 +384,7 @@ class GameCog(commands.Cog):
             if dm is None:
                 dm = await target.create_dm()
             
-            await dm.send(f"Ton mot a été trouvé sur "{ctx.guild.name}"! Ta partie est arrêtée. Tu peux rejouer en tapant `=jouer` sur le serveur.")
+            await dm.send(f'Ton mot a été trouvé sur "{ctx.guild.name}"! Ta partie est arrêtée. Tu peux rejouer en tapant `=jouer` sur le serveur.')
             
             #Donner des points à l'auteur de la commande
             self.scores[guild_id][author_id] += self.configs[guild_id]["points_per_find"]
