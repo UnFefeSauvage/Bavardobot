@@ -123,14 +123,6 @@ class GameCog(commands.Cog):
                     self.tasks[guild_id][user_id] = asyncio.create_task(self.wait_until_game_expires(guild_id, game))
                 else:
                     self.tasks[guild_id][user_id] = asyncio.create_task(self.wait_for_victory(guild_id, game))
-
-    
-    # Invoquée à chaque commande: s'il renvoie faux, la commande n'est pas lancée
-    def cog_check(self, ctx):
-        if not (ctx.guild.id in self.ready_guilds):
-            return False
-
-        return True
     
     async def close(self):
         #TODO Save all files
@@ -334,6 +326,11 @@ class GameCog(commands.Cog):
     @commands.command()
     async def jouer(self, ctx):
         """Démarre une partie et te donne un mot à placer en MP"""
+
+        if not self.is_guild_ready(ctx.guild.id):
+            await ctx.send("Le jeu n'est pas lancé sur ce serveur! Demandez à un administrateur de taper `=init_game`.")
+            return
+
         if self.has_running_game(ctx.author):
             # Renvoie les détails de sa partie à l'auteur
             dm = ctx.author.dm_channel
@@ -373,6 +370,10 @@ class GameCog(commands.Cog):
     @commands.command()
     async def unmask(self, ctx, ping, *, mot):
         """unmask [ping] [mot]  Te permet de démasquer un mot dans le message de quelqu'un"""
+
+        if not self.is_guild_ready(ctx.guild.id):
+            await ctx.send("Le jeu n'est pas lancé sur ce serveur! Demandez à un administrateur de taper `=init_game`.")
+            return
 
         if not self.has_running_game(ctx.message.author):
             await ctx.send("Tu dois toi même jouer pour pouvoir utiliser cette commande!")
@@ -442,7 +443,11 @@ class GameCog(commands.Cog):
     @commands.command()
     async def classement(self, ctx):
         """Affiche le classement des joueurs du serveur"""
-        #TODO affiche le classement des joueurs
+
+        if not self.is_guild_ready(ctx.guild.id):
+            await ctx.send("Le jeu n'est pas lancé sur ce serveur! Demandez à un administrateur de taper `=init_game`.")
+            return
+
         guild_id = str(ctx.guild.id)
         classement = discord.Embed(title="Classement")
         scores = self.scores[guild_id]
@@ -468,6 +473,11 @@ class GameCog(commands.Cog):
     @commands.has_guild_permissions(administrator=True)
     async def config(self, ctx, key=None, value=None):
         """config [key] [value] (admin only)"""
+
+        if not self.is_guild_ready(ctx.guild.id):
+            await ctx.send("Le jeu n'est pas lancé sur ce serveur! Demandez à un administrateur de taper `=init_game`.")
+            return
+
         guild_id = str(ctx.guild.id)
         config = self.configs[guild_id]
         #Si aucun argument n'est fourni, envoyer la liste des réglages
@@ -703,3 +713,6 @@ class GameCog(commands.Cog):
             #Changer de tâche d'attente
             self.tasks[guild_id][player_id].cancel()
             self.tasks[guild_id][player_id] = asyncio.create_task(self.wait_until_game_expires(guild_id, game))
+
+    def is_guild_ready(self, guild_id):
+        return (int(guild_id) in self.ready_guilds)
