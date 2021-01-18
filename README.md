@@ -27,7 +27,7 @@ Installez [discord.py](https://github.com/Rapptz/discord.py):
 pip install discord.py
 ```
 
-Ajoutez les fichiers nécéssaires (décrits dans la section "Configuration").
+Ajoutez les [fichiers nécéssaires](https://github.com/UnFefeSauvage/Bavardobot#configuration).
 
 Assurez vous d'avoir activé l'environnement virtuel python puis vous pouvez lancer le bot avec:
 
